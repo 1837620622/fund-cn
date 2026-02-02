@@ -243,6 +243,15 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:var(--bg);color:
 
 .empty{padding:30px;text-align:center;color:var(--text3);font-size:13px}
 
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 20px;display:flex;align-items:center;gap:8px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);transition:transform .3s ease}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--up)}
+.toast.success .toast-icon{color:var(--up)}
+.toast.warning{border-color:var(--gold)}
+.toast.warning .toast-icon{color:var(--gold)}
+.toast-icon{font-size:16px}
+.toast-msg{font-size:13px;color:var(--text)}
+
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;justify-content:center;align-items:flex-start;padding:40px 16px;overflow-y:auto}
 .modal-bg.open{display:flex}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:100%;max-width:480px;animation:slideIn .25s ease-out}
@@ -378,11 +387,24 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:var(--bg);color:
   </div>
 </div>
 
+<div class="toast" id="toast">
+  <span class="toast-icon">✓</span>
+  <span class="toast-msg" id="toastMsg">操作成功</span>
+</div>
+
 <script>
 let fundList=[];
 let watchlist=JSON.parse(localStorage.getItem('fund_watchlist')||'[]');
 let currentFund={code:'',name:''};
 const $=s=>document.querySelector(s);
+
+function showToast(msg,type='success'){
+  const toast=$('#toast'),toastMsg=$('#toastMsg');
+  toast.className='toast '+type;
+  toastMsg.textContent=msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),2000);
+}
 const colors=['#f0b90b','#2962ff','#0ecb81','#f6465d','#8b5cf6','#06b6d4','#ec4899','#f97316','#6366f1','#14b8a6'];
 
 document.addEventListener('DOMContentLoaded',async()=>{
@@ -450,10 +472,13 @@ function saveWatchlist(){localStorage.setItem('fund_watchlist',JSON.stringify(wa
 function isInWatchlist(code){return watchlist.some(w=>w.code===code)}
 function toggleWatchlist(){
   if(!currentFund.code)return;
-  if(isInWatchlist(currentFund.code)){
+  const wasInList=isInWatchlist(currentFund.code);
+  if(wasInList){
     watchlist=watchlist.filter(w=>w.code!==currentFund.code);
+    showToast('已移除自选','warning');
   }else{
     watchlist.unshift({code:currentFund.code,name:currentFund.name,estimateChange:null,estimateTime:null});
+    showToast('已添加自选','success');
   }
   saveWatchlist();renderWatchlist();updateStarBtn();
 }
