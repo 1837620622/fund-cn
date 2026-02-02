@@ -341,10 +341,11 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:var(--bg);color:
           <div class="tabs">
             <button class="tab active" data-type="est-up">估涨</button>
             <button class="tab" data-type="est-down">估跌</button>
+            <button class="tab" id="estRefresh" onclick="loadEstRanking(document.querySelector('[data-type^=est-].active')?.dataset.type?.replace('est-','')||'up')" style="margin-left:8px;background:var(--gold);color:#000">刷新</button>
           </div>
         </div>
         <div class="list-header"><span>基金名称</span><span style="text-align:right">估值</span><span style="text-align:right">估算涨跌</span></div>
-        <div id="estRanking"><div class="spinner"></div></div>
+        <div id="estRanking"><div class="empty" style="cursor:pointer" onclick="loadEstRanking('up')">点击加载实时估值排行<br><span style="font-size:11px;color:var(--text3)">数据量较大，按需加载</span></div></div>
       </div>
       
       <div class="panel">
@@ -410,9 +411,8 @@ const colors=['#f0b90b','#2962ff','#0ecb81','#f6465d','#8b5cf6','#06b6d4','#ec48
 document.addEventListener('DOMContentLoaded',async()=>{
   updateClock();setInterval(updateClock,1000);
   try{fundList=await(await fetch('/api/fund-list')).json()}catch(e){}
-  loadTicker();loadEstRanking('up');loadRanking('up');renderWatchlist();
+  loadTicker();loadRanking('up');renderWatchlist();
   setInterval(loadTicker,30000);
-  setInterval(()=>loadEstRanking(document.querySelector('[data-type^="est-"].active')?.dataset.type?.replace('est-','')||'up'),30000);
   setInterval(()=>loadRanking(document.querySelector('#navTabs .tab.active')?.dataset.type||'up'),60000);
   setInterval(updateWatchlistEstimates,10000);
 });
